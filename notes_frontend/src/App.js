@@ -1,47 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
+import React from 'react';
 import './App.css';
+import './index.css';
+import { useNotes } from './hooks/useNotes';
+import { useTheme } from './hooks/useTheme';
+import { AppHeader } from './components/AppHeader';
+import { NoteForm } from './components/NoteForm';
+import { NotesToolbar } from './components/NotesToolbar';
+import { NotesList } from './components/NotesList';
 
+/**
+ * Root application component for the Notes app.
+ * Manages notes state via useNotes and visual theme via useTheme.
+ */
 // PUBLIC_INTERFACE
 function App() {
-  const [theme, setTheme] = useState('light');
+  const {
+    notes,
+    filteredNotes,
+    createNote,
+    updateNote,
+    deleteNote,
+    clearAllNotes,
+    searchQuery,
+    setSearchQuery,
+    activeTagFilter,
+    setActiveTagFilter,
+    sortOrder,
+    setSortOrder,
+    stats,
+  } = useNotes();
 
-  // Effect to apply theme to document element
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={`app-root theme-${theme}`}>
+      <div className="app-shell">
+        <AppHeader theme={theme} onToggleTheme={toggleTheme} />
+
+        <main className="app-main" aria-label="Notes application">
+          <section className="left-column" aria-label="Create or edit note">
+            <NoteForm
+              onCreate={createNote}
+              onUpdate={updateNote}
+            />
+          </section>
+
+          <section className="right-column" aria-label="Notes list and controls">
+            <NotesToolbar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              activeTagFilter={activeTagFilter}
+              onTagFilterChange={setActiveTagFilter}
+              sortOrder={sortOrder}
+              onSortOrderChange={setSortOrder}
+              onClearAll={clearAllNotes}
+              stats={stats}
+            />
+            <NotesList
+              notes={filteredNotes}
+              onUpdate={updateNote}
+              onDelete={deleteNote}
+            />
+          </section>
+        </main>
+      </div>
     </div>
   );
 }
